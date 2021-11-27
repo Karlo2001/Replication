@@ -1,24 +1,22 @@
 package main
 
 import (
-	"context"
 	"log"
-	"math/rand"
 	"net"
 	"os"
 	"strconv"
-	"time"
 
-	"github.itu.dk/kabm/Replication/Proto"
+	Replication "github.com/Karlo2001/Replication/Proto"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
 type ack int32
 
 const (
-	Exception ack = -1;
-	Fail = 0;
-	Success = 1;
+	Exception ack = -1
+	Fail          = 0
+	Success       = 1
 )
 
 type Node struct {
@@ -26,8 +24,8 @@ type Node struct {
 	Timestamp int32
 }
 
-var idslice []ReplicationServiceClient
-var clients []ReplicationServiceClient
+var idslice []Replication.ReplicationServiceClient
+var clients []Replication.ReplicationServiceClient
 var clientports []string
 
 func main() {
@@ -54,9 +52,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to listen on port %d: %v", nodeid, err)
 	}
-	s := Node{Id: int32(nodeid), Timestamp: 0, Status: "RELEASED"}
+	s := Node{Id: int32(nodeid), Timestamp: 0}
 	grpcServer := grpc.NewServer()
-	RegisterReplicationServiceServer(grpcServer, &s)
+	Replication.RegisterReplicationServiceServer(grpcServer, &s)
 
 	//Wait on all servers to join
 	//time.Sleep(time.Duration(17) * time.Second)
@@ -84,7 +82,7 @@ func createclient() {
 	for _, idport := range idports {
 		log.Println("Searching on port " + idport)
 		conn, _ := grpc.Dial(idport, grpc.WithInsecure(), grpc.WithBlock())
-		c := NewReplicationServiceClient(conn)
+		c := Replication.NewReplicationServiceClient(conn)
 		clients = append(clients, c)
 		log.Println("Port " + idport + " connected")
 	}
@@ -125,3 +123,11 @@ func createclient() {
 		funkygine(s)
 	}
 }*/
+
+func (s *Node) Bid(ctx context.Context, request *Replication.BidRequest) (*Replication.Ack, error) {
+	return &Replication.Ack{}, nil
+}
+
+func (s *Node) Result(ctx context.Context, empty *Replication.Empty) (*Replication.Outcome, error) {
+	return &Replication.Outcome{}, nil
+}

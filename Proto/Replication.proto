@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.itu.dk/kabm/Replication";
+option go_package = "github.com/Karlo2001/Replication";
 
 package main;
 
