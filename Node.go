@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -15,8 +17,8 @@ type ack int32
 
 const (
 	Exception ack = -1
-	Fail          = 0
-	Success       = 1
+	Fail      ack = 0
+	Success   ack = 1
 )
 
 type Node struct {
@@ -26,7 +28,7 @@ type Node struct {
 }
 
 var clients []Replication.ReplicationServiceClient
-var clientports []string
+var clientports []*string
 
 func main() {
 	//reader := bufio.NewReader(os.Stdin)
@@ -41,17 +43,19 @@ func main() {
 		log.Println("The specified id is not of type int. Please try again!")
 		os.Exit(1)
 	}
-
-	idport := string(os.Args[2][len(os.Args[2])-5])
-	clientports = os.Args[3:]
+	port, _ := strconv.Atoi(string(os.Args[2][len(os.Args[2])-4:]))
+	idport := flag.Int("port", port, "The nodes port")
+	fmt.Println(*idport)
+	var counter = 0
+	for _, c := range os.Args[3:] {
+		clientports = append(clientports, flag.String("client port"+string(counter), "localhost"+string(c[len(c)-5:]), "Another clients port"))
+		counter++
+	}
 	//nodeid := 9000
 	//idport := ":9000"
 
 	//Make the server
-	for i, _ := range clientports {
-		clientports[i] = string(clientports[i][len(clientports[i])-5:])
-	}
-	lis, err := net.Listen("tcp", idport)
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *idport))
 	if err != nil {
 		log.Fatalf("Failed to listen on port %d: %v", nodeid, err)
 	}
@@ -63,9 +67,10 @@ func main() {
 	//time.Sleep(time.Duration(17) * time.Second)
 
 	go client(&s)
-	if err := grpcServer.Serve(lis); err != nil {
+	grpcServer.Serve(lis)
+	/*if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve gRPC server over port 9000: %v", err)
-	}
+	}*/
 
 }
 
@@ -77,17 +82,17 @@ func client(s *Node) {
 }
 
 func createclient() {
-	var idports []string
+	var idports []*string
 
 	//idports = append(idports, clientport1)
 	//idports = append(idports, clientport2)
 	idports = append(idports, clientports...)
 	for _, idport := range idports {
-		log.Println("Searching on port " + idport)
-		conn, _ := grpc.Dial(idport, grpc.WithInsecure(), grpc.WithBlock())
+		log.Println("Searching on port " + *idport)
+		conn, _ := grpc.Dial(*idport, grpc.WithInsecure(), grpc.WithBlock())
 		c := Replication.NewReplicationServiceClient(conn)
 		clients = append(clients, c)
-		log.Println("Port " + idport + " connected")
+		log.Println("Port " + *idport + " connected")
 	}
 }
 
