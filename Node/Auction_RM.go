@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"strconv"
 
 	pb "Replication/Proto"
 
@@ -13,8 +15,8 @@ import (
 )
 
 var (
-	port = flag.Int("port", 10000, "The server port")
-	id   int32
+	//port = flag.Int("port", 10000, "The server port")
+	id int32
 )
 
 type auctionServer struct {
@@ -42,6 +44,8 @@ func (s *auctionServer) Result(ctx context.Context, empty *pb.Empty) (*pb.Outcom
 
 func main() {
 	flag.Parse()
+	listenPort, _ := strconv.Atoi(os.Args[1])
+	port := flag.Int("port", listenPort, "The server port")
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
