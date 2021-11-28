@@ -22,9 +22,9 @@ const (
 type Node struct {
 	Id        int32
 	Timestamp int32
+	Replication.UnimplementedReplicationServiceServer
 }
 
-var idslice []Replication.ReplicationServiceClient
 var clients []Replication.ReplicationServiceClient
 var clientports []string
 
@@ -42,12 +42,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	idport := os.Args[2]
+	idport := string(os.Args[2][len(os.Args[2])-5])
 	clientports = os.Args[3:]
 	//nodeid := 9000
 	//idport := ":9000"
 
 	//Make the server
+	for i, _ := range clientports {
+		clientports[i] = string(clientports[i][len(clientports[i])-5:])
+	}
 	lis, err := net.Listen("tcp", idport)
 	if err != nil {
 		log.Fatalf("Failed to listen on port %d: %v", nodeid, err)
