@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"strconv"
 
 	Replication "github.com/Karlo2001/Replication/Proto"
 	"google.golang.org/grpc"
 )
 
 var (
-	port       = flag.Int("port", 10000, "The server port")
+	//port       = flag.Int("port", 10000, "The server port")
 	Id         int32
 	Timestamp  int32
 	queue      = make([]client, 0)
@@ -71,6 +73,8 @@ func (s *server) Result(ctx context.Context, empty *Replication.Empty) (*Replica
 
 func main() {
 	flag.Parse()
+	listenPort, _ := strconv.Atoi(os.Args[1])
+	port := flag.Int("port", listenPort, "The server port")
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
