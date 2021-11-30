@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	serverAddr = flag.String("server_addr", "localhost:10000", "The server address in the format of host:port")
+	serverAddr = flag.String("server_addr", "localhost:9000", "The server address in the format of host:port")
 	name       string
 	time       int32
 )
@@ -58,9 +58,11 @@ func main() {
 					fmt.Println("*** Failed to bid")
 				} else {
 					amount := int32(amountI)
-					fmt.Println(amount)
-					ack, _ := client.Bid(context.Background(),
+					ack, err := client.Bid(context.Background(),
 						&Replication.BidRequest{Name: name, Timestamp: time, Bid: amount})
+					if err != nil {
+						log.Fatal(err)
+					}
 					if ack.Ack == 1 {
 						fmt.Println("Bid accepted!")
 					} else if ack.Ack == 0 {

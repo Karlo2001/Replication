@@ -20,6 +20,9 @@ const _ = grpc.SupportPackageIsVersion7
 type AuctionClient interface {
 	Bid(ctx context.Context, in *BidRequest, opts ...grpc.CallOption) (*Ack, error)
 	Result(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Outcome, error)
+	VoteForMe(ctx context.Context, in *ServerInfo, opts ...grpc.CallOption) (*Ack, error)
+	NewLeader(ctx context.Context, in *ServerInfo, opts ...grpc.CallOption) (*Ack, error)
+	Update(ctx context.Context, in *UpdateMessage, opts ...grpc.CallOption) (*Ack, error)
 }
 
 type auctionClient struct {
@@ -48,12 +51,42 @@ func (c *auctionClient) Result(ctx context.Context, in *Empty, opts ...grpc.Call
 	return out, nil
 }
 
+func (c *auctionClient) VoteForMe(ctx context.Context, in *ServerInfo, opts ...grpc.CallOption) (*Ack, error) {
+	out := new(Ack)
+	err := c.cc.Invoke(ctx, "/main.Auction/VoteForMe", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *auctionClient) NewLeader(ctx context.Context, in *ServerInfo, opts ...grpc.CallOption) (*Ack, error) {
+	out := new(Ack)
+	err := c.cc.Invoke(ctx, "/main.Auction/NewLeader", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *auctionClient) Update(ctx context.Context, in *UpdateMessage, opts ...grpc.CallOption) (*Ack, error) {
+	out := new(Ack)
+	err := c.cc.Invoke(ctx, "/main.Auction/Update", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuctionServer is the server API for Auction service.
 // All implementations must embed UnimplementedAuctionServer
 // for forward compatibility
 type AuctionServer interface {
 	Bid(context.Context, *BidRequest) (*Ack, error)
 	Result(context.Context, *Empty) (*Outcome, error)
+	VoteForMe(context.Context, *ServerInfo) (*Ack, error)
+	NewLeader(context.Context, *ServerInfo) (*Ack, error)
+	Update(context.Context, *UpdateMessage) (*Ack, error)
 	mustEmbedUnimplementedAuctionServer()
 }
 
@@ -66,6 +99,15 @@ func (UnimplementedAuctionServer) Bid(context.Context, *BidRequest) (*Ack, error
 }
 func (UnimplementedAuctionServer) Result(context.Context, *Empty) (*Outcome, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Result not implemented")
+}
+func (UnimplementedAuctionServer) VoteForMe(context.Context, *ServerInfo) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VoteForMe not implemented")
+}
+func (UnimplementedAuctionServer) NewLeader(context.Context, *ServerInfo) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NewLeader not implemented")
+}
+func (UnimplementedAuctionServer) Update(context.Context, *UpdateMessage) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
 func (UnimplementedAuctionServer) mustEmbedUnimplementedAuctionServer() {}
 
@@ -116,6 +158,60 @@ func _Auction_Result_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auction_VoteForMe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ServerInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServer).VoteForMe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.Auction/VoteForMe",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServer).VoteForMe(ctx, req.(*ServerInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auction_NewLeader_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ServerInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServer).NewLeader(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.Auction/NewLeader",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServer).NewLeader(ctx, req.(*ServerInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auction_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.Auction/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServer).Update(ctx, req.(*UpdateMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auction_ServiceDesc is the grpc.ServiceDesc for Auction service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -130,6 +226,18 @@ var Auction_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Result",
 			Handler:    _Auction_Result_Handler,
+		},
+		{
+			MethodName: "VoteForMe",
+			Handler:    _Auction_VoteForMe_Handler,
+		},
+		{
+			MethodName: "NewLeader",
+			Handler:    _Auction_NewLeader_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _Auction_Update_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

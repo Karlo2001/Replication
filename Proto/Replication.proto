@@ -9,6 +9,9 @@ package main;
 service Auction {
     rpc Bid(BidRequest) returns (Ack) {}
     rpc Result(Empty) returns (Outcome) {};
+	rpc VoteForMe(ServerInfo) returns (Ack) {}
+	rpc NewLeader(ServerInfo) returns (Ack) {}
+	rpc Update(UpdateMessage) returns (Ack) {}
 }
 
 message BidRequest {
@@ -27,6 +30,20 @@ message Outcome {
 message Ack {
 	int32 ack = 1;
 	int32 timestamp = 2;
+}
+
+message ServerInfo {
+	int32 id = 1;
+	int32 timestamp = 2;
+}
+
+message UpdateMessage {
+	string highestBidName = 1;
+	int32 timestamp = 2;
+	int32 highestBid = 3;
+	repeated int32 allBids = 4;
+	repeated string allBiddersNames = 5;
+	bool ping = 6;
 }
 
 message Empty {}
